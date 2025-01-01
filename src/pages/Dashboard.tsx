@@ -5,6 +5,13 @@ import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 import { MonthlyExpenseChart } from "@/components/dashboard/MonthlyExpenseChart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
@@ -20,7 +27,7 @@ const Dashboard = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isEditingIncome, setIsEditingIncome] = useState(false);
   const navigate = useNavigate();
-  const { formatAmount } = useCurrency();
+  const { currency, setCurrency, currencies } = useCurrency();
 
   const totalExpenses = transactions.reduce((sum, t) => sum + t.amount, 0);
   const balance = income - totalExpenses;
@@ -38,9 +45,29 @@ const Dashboard = () => {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Expense Tracker</h1>
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
-          </Button>
+          <div className="flex items-center gap-4">
+            <Select
+              value={currency.code}
+              onValueChange={(value) => {
+                const newCurrency = currencies.find((c) => c.code === value);
+                if (newCurrency) setCurrency(newCurrency);
+              }}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map((curr) => (
+                  <SelectItem key={curr.code} value={curr.code}>
+                    {curr.code} ({curr.symbol})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -55,7 +82,6 @@ const Dashboard = () => {
                   value={income}
                   onChange={(e) => setIncome(Number(e.target.value))}
                   className="w-32"
-                  placeholder="Enter amount in ₹"
                 />
                 <Button
                   onClick={() => setIsEditingIncome(false)}
@@ -67,7 +93,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <span>{formatAmount(income)}</span>
+                <span>{currency.symbol}{income.toFixed(2)}</span>
                 <Button
                   onClick={() => setIsEditingIncome(true)}
                   variant="outline"
