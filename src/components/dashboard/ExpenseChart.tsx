@@ -1,5 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface Transaction {
   amount: number;
@@ -15,6 +16,8 @@ interface ExpenseChartProps {
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
 export const ExpenseChart = ({ transactions }: ExpenseChartProps) => {
+  const { formatAmount } = useCurrency();
+  
   const categoryTotals = transactions.reduce((acc, transaction) => {
     acc[transaction.category] = (acc[transaction.category] || 0) + transaction.amount;
     return acc;
@@ -53,7 +56,7 @@ export const ExpenseChart = ({ transactions }: ExpenseChartProps) => {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: number) => [`$${value.toFixed(2)}`, "Amount"]}
+              formatter={(value: number) => [formatAmount(value), "Amount"]}
             />
             <Legend />
           </PieChart>
