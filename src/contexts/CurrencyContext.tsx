@@ -1,46 +1,31 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext } from "react";
 
-type Currency = {
-  code: string;
-  symbol: string;
-  rate: number; // Rate relative to USD
-};
-
-const currencies: Currency[] = [
-  { code: "USD", symbol: "$", rate: 1 },
-  { code: "INR", symbol: "₹", rate: 83.28 },
-  { code: "EUR", symbol: "€", rate: 0.92 },
-  { code: "GBP", symbol: "£", rate: 0.79 },
-];
-
-type CurrencyContextType = {
-  currency: Currency;
-  setCurrency: (currency: Currency) => void;
+interface CurrencyContextType {
   formatAmount: (amount: number) => string;
-  currencies: Currency[];
-};
+}
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-export const CurrencyProvider = ({ children }: { children: React.ReactNode }) => {
-  const [currency, setCurrency] = useState<Currency>(currencies[0]);
-
+export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const formatAmount = (amount: number) => {
-    const convertedAmount = amount * currency.rate;
-    return `${currency.symbol}${convertedAmount.toFixed(2)}`;
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, formatAmount, currencies }}>
+    <CurrencyContext.Provider value={{ formatAmount }}>
       {children}
     </CurrencyContext.Provider>
   );
-};
+}
 
-export const useCurrency = () => {
+export function useCurrency() {
   const context = useContext(CurrencyContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useCurrency must be used within a CurrencyProvider");
   }
   return context;
-};
+}
